@@ -1,21 +1,26 @@
 import json
+import glob
+import os
 from llama_index.core import VectorStoreIndex, Document
 from llama_index.core.retrievers import VectorIndexRetriever
 from llama_index.embeddings.huggingface import HuggingFaceEmbedding
 
-JSON_CHUNKS_PATH = "Academic-RAG-ML-Course/Retriever/textbook_chunks_temp.json"
-CACHE_DIR         = "Academic-RAG-ML-Course/cache"
+# now a directory
+JSON_CHUNKS_DIR = "./Data"
+CACHE_DIR         = "./cache"
 DEVICE            = "cuda:0"
 EMBED_MODEL_NAME  = "BAAI/bge-small-en-v1.5"
 TOP_K             = 5
 
-def load_chunks(json_path):
-    with open(json_path, "r", encoding="utf-8") as f:
-        raw = json.load(f)
-    docs = [
-        Document(text=entry["chunk"], doc_id=entry.get("id"))
-        for entry in raw
-    ]
+def load_chunks(json_dir):
+    docs = []
+    for json_path in glob.glob(os.path.join(json_dir, "*.json")):
+        with open(json_path, "r", encoding="utf-8") as f:
+            raw = json.load(f)
+        docs.extend(
+            Document(text=entry["chunk"], doc_id=entry.get("id"))
+            for entry in raw
+        )
     return docs
 
 embedder = HuggingFaceEmbedding(
@@ -24,14 +29,12 @@ embedder = HuggingFaceEmbedding(
     cache_folder=CACHE_DIR,
 )
 
-documents = load_chunks(JSON_CHUNKS_PATH)
-
+documents = load_chunks(JSON_CHUNKS_DIR)
 
 index = VectorStoreIndex.from_documents(
     documents,
     embed_model=embedder,
 )
-
 
 retriever = VectorIndexRetriever(
     index=index,
