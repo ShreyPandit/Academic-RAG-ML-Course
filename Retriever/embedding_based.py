@@ -1,16 +1,18 @@
 import json
 import glob
 import os
-from llama_index.core import VectorStoreIndex, Document
+from llama_index.core import VectorStoreIndex, Document, load_index_from_storage
 from llama_index.core.retrievers import VectorIndexRetriever
 from llama_index.embeddings.huggingface import HuggingFaceEmbedding
+from llama_index.core.storage.storage_context import StorageContext
 
-# now a directory
-JSON_CHUNKS_DIR = "./Data"
-CACHE_DIR         = "./cache"
-DEVICE            = "cuda:0"
-EMBED_MODEL_NAME  = "BAAI/bge-small-en-v1.5"
-TOP_K             = 5
+JSON_CHUNKS_DIR = "Academic-RAG-ML-Course/Data"
+INDEX_DIR       = "Academic-RAG-ML-Course/Data/index_storage"
+CACHE_DIR       = "Academic-RAG-ML-Course/cache"
+
+DEVICE           = "cuda:0"
+EMBED_MODEL_NAME = "BAAI/bge-small-en-v1.5"
+TOP_K            = 5
 
 def load_chunks(json_dir):
     docs = []
@@ -29,10 +31,24 @@ embedder = HuggingFaceEmbedding(
     cache_folder=CACHE_DIR,
 )
 
-documents = load_chunks(JSON_CHUNKS_DIR)
+if os.path.isdir(INDEX_DIR) and os.listdir(INDEX_DIR):
+    storage_context = StorageContext.from_defaults(persist_dir=INDEX_DIR)
+    index = load_index_from_storage(
+        storage_context,
+        embed_model=embedder
+    )
+else:
+    documents = load_chunks(JSON_CHUNKS_DIR)
+    index = VectorStoreIndex.from_documents(
+        documents,
+        embed_model=embedder,
+    )
+    index.storage_context.persist(persist_dir=INDEX_DIR)
 
-index = VectorStoreIndex.from_documents(
-    documents,
+
+retriever = VectorIndexRetriever(
+    index=index,
+    similarity_top_k=TOP_K,
     embed_model=embedder,
 )
 
@@ -50,6 +66,5 @@ def retrieve(question: str):
 
 if __name__ == "__main__":
     q = "What is the definition of photosynthesis?"
-    top_chunks = retrieve(q)
-    for i, chunk in enumerate(top_chunks, 1):
+    for i, chunk in enumerate(retrieve(q), 1):
         print(f"\n=== Passage #{i} ===\n{chunk}")

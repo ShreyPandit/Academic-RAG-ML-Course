@@ -1,3 +1,5 @@
 # Ignore the Academic-RAG-ML-Course cache directory
 /Academic-RAG-ML-Course/cache/
 /cache/
+/Academic-RAG-ML-Course/Data/index_storage
+/Data/index_storage
