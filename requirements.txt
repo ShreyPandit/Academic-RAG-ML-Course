@@ -1,12 +1,11 @@
 # requirements.txt
 
-# llama-indexdatasets>=2.0.0
-# tqdm>=4.0.0
-# transformers
-# torch
-# openai
-# cohere
-
+datasets>=2.0.0
+tqdm>=4.0.0
+transformers
+torch
+openai
+cohere
 llama-index-core
 llama-index-embeddings-cohere
 llama-index-llms-openai
