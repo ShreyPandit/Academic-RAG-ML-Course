@@ -5,9 +5,10 @@ tqdm>=4.0.0
 transformers
 torch
 openai
-cohere
-llama-index-core
+cohe
 llama-index-embeddings-cohere
 llama-index-llms-openai
 llama-index-embeddings-openai
 llama-index-embeddings-huggingface
+rank_bm25
+nltk
