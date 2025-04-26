@@ -6,9 +6,9 @@ from llama_index.core.retrievers import VectorIndexRetriever
 from llama_index.embeddings.huggingface import HuggingFaceEmbedding
 from llama_index.core.storage.storage_context import StorageContext
 
-JSON_CHUNKS_DIR = "Academic-RAG-ML-Course/Data"
-INDEX_DIR       = "Academic-RAG-ML-Course/Data/index_storage"
-CACHE_DIR       = "Academic-RAG-ML-Course/cache"
+JSON_CHUNKS_DIR = "Data"
+INDEX_DIR       = "Data/index_storage"
+CACHE_DIR       = "cache"
 
 DEVICE           = "cuda:0"
 EMBED_MODEL_NAME = "BAAI/bge-small-en-v1.5"
@@ -65,6 +65,8 @@ def retrieve(question: str):
     return [doc.text for doc in hits]
 
 if __name__ == "__main__":
-    q = "What is the definition of photosynthesis?"
+    q = """ 
+    Show that the derivative of the sigmoid function?
+    """
     for i, chunk in enumerate(retrieve(q), 1):
         print(f"\n=== Passage #{i} ===\n{chunk}")
