@@ -1,0 +1,62 @@
+[
+  {
+    "question": "Derive the derivative of the sigmoid function $$ \\sigma(x)=\\frac{1}{1+e^{-x}} $$ and show that $$ \\sigma'(x)=\\sigma(x)(1-\\sigma(x)). $$",
+    "answer": "Differentiate: $$ \\sigma'(x)=\\frac{d}{dx}\\Bigl(\\frac{1}{1+e^{-x}}\\Bigr)=-\\frac{1}{(1+e^{-x})^{2}}(-e^{-x})=\\frac{e^{-x}}{(1+e^{-x})^{2}}=\\frac{1}{1+e^{-x}}\\,\\frac{e^{-x}}{1+e^{-x}}=\\sigma(x)(1-\\sigma(x)). $$"
+  },
+  {
+    "question": "For which matrices does the singular-value decomposition (SVD) exist?",
+    "answer": "Every real or complex matrix \\(A\\in\\mathbb{R}^{m\\times n}\\) (or \\(\\mathbb{C}^{m\\times n}\\)) admits an SVD $$ A = U\\Sigma V^{\\top}, $$ with orthogonal (unitary) \\(U,V\\) and non-negative diagonal \\(\\Sigma\\)."
+  },
+  {
+    "question": "What is the role of slack variables \\(\\xi_i\\) in soft-margin SVMs and how do they affect the optimization problem and the decision boundary?",
+    "answer": "They relax the hard constraint to $$ y_i(\\mathbf{w}^{\\top}x_i+b) \\ge 1-\\xi_i,\\; \\xi_i\\ge0. $$ The objective adds a penalty \\(C\\sum_i\\xi_i\\), trading off margin size against classification errors. Larger allowable \\(\\xi_i\\) lets the boundary tolerate misclassified or inside-margin points, often improving generalisation."
+  },
+  {
+    "question": "Show that \\(\\sum_{i=1}^N\\xi_i\\) in the soft-margin SVM equals the hinge loss $$ L_{\\text{hinge}}(y,\\hat y)=\\sum_{i} \\max(0,1-y_i\\hat y_i). $$",
+    "answer": "The smallest \\(\\xi_i\\) satisfying \\(\\xi_i\\ge1-y_i\\hat y_i,\\;\\xi_i\\ge0\\) is \\(\\xi_i=\\max(0,1-y_i\\hat y_i)\\). Hence $$ \\sum_i\\xi_i = \\sum_i \\max(0,1-y_i\\hat y_i)=L_{\\text{hinge}}(y,\\hat y). $$"
+  },
+  {
+    "question": "State the necessary and sufficient condition for two random variables \\(X\\) and \\(Y\\) to be independent.",
+    "answer": "Independence holds iff their joint distribution factorises: $$ P(X=x, Y=y)=P(X=x)\\,P(Y=y) \\quad \\forall\\;x,y. $$"
+  },
+  {
+    "question": "Derive the closed-form ridge-regression solution \\( w^{*}=(X^{\\top}X+\\lambda I)^{-1}X^{\\top}y. \\)",
+    "answer": "Setting the gradient of \\(\\|y-Xw\\|_2^{2}+\\lambda\\|w\\|_2^{2}\\) to zero gives $$ (X^{\\top}X+\\lambda I)w=X^{\\top}y, $$ so $$ w^{*}=(X^{\\top}X+\\lambda I)^{-1}X^{\\top}y. $$ For \\(\\lambda>0\\) the matrix is always invertible."
+  },
+  {
+    "question": "Given the SVD \\(X=U\\Sigma V^{\\top}\\), show that ridge-regression predictions can be written $$ \\hat y = U\\operatorname{diag}\\!\\Bigl(\\tfrac{\\sigma_i^{2}}{\\sigma_i^{2}+\\lambda}\\Bigr)U^{\\top}y. $$",
+    "answer": "Insert \\( w^{*} \\) into \\( \\hat y=Xw^{*} \\), use \\( X^{\\top}X = V\\Sigma^{\\top}\\Sigma V^{\\top} \\), and simplify. Each singular value is shrinked by \\( \\sigma_i^{2}/(\\sigma_i^{2}+\\lambda). \\)"
+  },
+  {
+    "question": "Discuss the behaviour of \\( \\hat y = U\\operatorname{diag}(\\sigma_i^{2}/(\\sigma_i^{2}+\\lambda))U^{\\top}y \\) when (i) \\(\\lambda = 0\\) and (ii) \\(\\lambda \\to \\infty\\).",
+    "answer": "(i) \\(\\lambda=0\\Rightarrow \\hat y = UU^{\\top}y\\), the ordinary least-squares prediction. (ii) \\(\\lambda\\to\\infty\\Rightarrow \\hat y\\to0\\); extreme regularisation drives predictions to zero."
+  },
+  {
+    "question": "Show that logistic regression models $$ P(y=1\\mid\\mathbf{x}) = \\sigma(\\mathbf{w}^{\\top}\\mathbf{x}+b). $$",
+    "answer": "From the log-odds model and \\(P(y=0\\mid\\mathbf{x})=1-P(y=1\\mid\\mathbf{x})\\) we obtain $$ P(y=1\\mid\\mathbf{x})=\\frac{e^{\\mathbf{w}^{\\top}\\mathbf{x}+b}}{1+e^{\\mathbf{w}^{\\top}\\mathbf{x}+b}}=\\sigma(\\mathbf{w}^{\\top}\\mathbf{x}+b). $$"
+  },
+  {
+    "question": "Prove that the decision boundary of binary logistic regression is a linear surface.",
+    "answer": "The boundary is where \\( P(y=1\\mid\\mathbf{x})=0.5 \\Rightarrow \\mathbf{w}^{\\top}\\mathbf{x}+b=0, \\) which is the equation of a hyperplane."
+  },
+  {
+    "question": "How does introducing a temperature parameter \\(T>0\\) in $$ \\sigma_T(z)=\\frac{1}{1+e^{-z/T}} $$ affect the optimal logistic-regression weights and the decision boundary?",
+    "answer": "Substituting \\(u=w/T\\) shows the loss equals the standard loss in \\(u\\), so \\(u^{*}=w^{*}\\) (the \\(T=1\\) optimum). Thus \\(w_T^{*}=T w^{*}\\). The decision boundary \\(w_T^{*\\,\\top}x=0\\) is unchanged; only weight magnitudes rescale."
+  },
+  {
+    "question": "Explain why vanilla logistic regression cannot solve the XOR problem and propose a feature transformation that makes the data linearly separable.",
+    "answer": "XOR is not linearly separable in \\(\\mathbb{R}^{2}\\). Adding \\(\\phi_3=(x_1-x_2)^2\\) yields features \\(\\phi=(x_1,x_2,(x_1-x_2)^2)\\). In this space the classes are separable by the hyperplane \\(\\phi_3=0.5\\) (weights \\((0,0,1)\\), bias \\(-0.5\\))."
+  },
+  {
+    "question": "Write the forward-pass equations for a two-layer network with a 100-unit sigmoid hidden layer and ReLU output.",
+    "answer": "Hidden pre-activation: \\( \\mathbf{z}^{(1)} = (W^{(1)})^{\\top}\\mathbf{x} + \\mathbf{b}^{(1)}. \\) Hidden activation: \\( \\mathbf{a}^{(1)} = \\sigma(\\mathbf{z}^{(1)}). \\) Output pre-activation: \\( z^{(2)} = (W^{(2)})^{\\top}\\mathbf{a}^{(1)} + b^{(2)}. \\) Prediction: \\( \\hat y = \\max(0, z^{(2)}). \\)"
+  },
+  {
+    "question": "Derive the back-propagation gradients for \\(W^{(2)}, b^{(2)}, W^{(1)}, b^{(1)}\\) under MSE loss and give the SGD update rules.",
+    "answer": "Error signal: \\( \\delta^{(2)} = (\\hat y - y)\\,\\mathbf{1}(z^{(2)}>0). \\) Gradients: \\( \\nabla_{W^{(2)}} = \\mathbf{a}^{(1)}\\delta^{(2)},\\; \\nabla_{b^{(2)}} = \\delta^{(2)}. \\) Propagate: \\( \\delta^{(1)} = (W^{(2)}\\delta^{(2)}) \\odot \\sigma'(\\mathbf{z}^{(1)}). \\) Then \\( \\nabla_{W^{(1)}} = \\mathbf{x}\\,\\delta^{(1)\\top},\\; \\nabla_{b^{(1)}} = \\delta^{(1)}. \\) Updates (learning-rate \\(\\eta\\)): \\( W^{(k)}\\leftarrow W^{(k)}-\\eta\\nabla_{W^{(k)}},\\; b^{(k)}\\leftarrow b^{(k)}-\\eta\\nabla_{b^{(k)}}. \\)"
+  },
+  {
+    "question": "Is a sigmoid activation appropriate in the output layer for predicting the age of a cat? Explain.",
+    "answer": "No. Sigmoid restricts the output to \\([0,1]\\), suitable for binary classification. Age prediction is unbounded and continuous; a ReLU (or linear) activation lets the network output any non-negative value."
+  }
+]
