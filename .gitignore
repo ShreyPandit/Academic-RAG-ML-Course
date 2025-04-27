@@ -4,5 +4,6 @@ cache/
 Academic-RAG-ML-Course/Data/index_storage
 Data/index_storage
 Data/index_store
+Data/*
 *.pyc
 .ipynb_checkpoints
