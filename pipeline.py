@@ -3,16 +3,14 @@ import json
 import re
 from pathlib import Path
 from typing import List, Dict
-from Retriever.embedding_based import retrieve
+from Retriever import build_retriever
 from transformers import pipeline
 
-MODEL_NAME = "/data/spandit/Qwen2.5-3B-Instruct"
-DEVICE = 0
+MODEL_NAME = "Qwen/Qwen2.5-VL-3B-Instruct"
 MAX_NEW_TOKENS_ANS = 1024
 MAX_NEW_TOKENS_GRADE = 6
 
-
-def build_generator(model_name: str = MODEL_NAME, device: int = DEVICE):
+def build_generator(model_name: str = MODEL_NAME):
     """Return a transformers.pipeline for text generation."""
     return pipeline("text-generation", model=model_name, device_map="auto", trust_remote_code=True)
 
@@ -20,8 +18,8 @@ def build_generator(model_name: str = MODEL_NAME, device: int = DEVICE):
 def generate_answer(question: str, generator_llm, retriever: str) -> str:
     """Generate an answer to *question* using retrieval-augmented context."""
     ## Using RAG
-    if retriever is not 'none':
-        context_passages = retrieve(question)
+    if retriever is not None:
+        context_passages = retriever.retrieve(question)
         context = "\n\n".join(context_passages)
         # print(f"Context: {context}")
         system_prompt = "You are a student taking an exam. For each question, you are provided with a context. Your task is to answer the question directly and concisely. Do not include any extra commentary or introductions — immediately provide the answer with help of the given context."
@@ -42,7 +40,7 @@ def generate_answer(question: str, generator_llm, retriever: str) -> str:
     return output[0]["generated_text"][-1]['content']
 
 
-def build_grader(model_name: str = MODEL_NAME, device: int = DEVICE):
+def build_grader(model_name: str = MODEL_NAME):
     """Return a transformers.pipeline used as an LLM judge."""
     return pipeline("text-generation", model=model_name, device_map="auto", trust_remote_code=True)
 
@@ -98,9 +96,15 @@ def run_eval(
 def main():
     parser = argparse.ArgumentParser(description="RAG pipeline + LLM grading")
     parser.add_argument(
-        "--data",
+        "--data_dir",
         type=Path,
-        required=True,
+        default="Data",
+        help="Path to dir where all documents are present in json format",
+    )
+    parser.add_argument(
+        "--eval_data",
+        type=Path,
+        default="questions.json",
         help="Path to JSONL or JSON file with objects: {question:str, answer:str}",
     )
     parser.add_argument(
@@ -115,16 +119,22 @@ def main():
         default='embed',
         help="Which type of retriever to use. Can be one of 'none' (for no RAG), 'embed', and 'bm25'.",
     )
+    parser.add_argument(
+        "--topk",
+        type=int,
+        default='5',
+        help="How many documents to retrieve during RAG.",
+    )
     args = parser.parse_args()
 
     # Load evaluation data
-    if args.data.suffix == ".jsonl":
-        qa_pairs = [json.loads(line) for line in args.data.read_text().splitlines()]
+    if args.eval_data.suffix == ".jsonl":
+        qa_pairs = [json.loads(line) for line in args.eval_data.read_text().splitlines()]
     else:
-        qa_pairs = json.loads(args.data.read_text())
+        qa_pairs = json.loads(args.eval_data.read_text())
 
     generator = build_generator()
-    retriever = args.retriever
+    retriever = build_retriever(args.retriever, args.topk, args.data_dir)
     grader = build_grader()
 
     run_eval(qa_pairs, generator, retriever, grader, args.save)
