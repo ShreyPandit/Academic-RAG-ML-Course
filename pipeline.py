@@ -7,11 +7,10 @@ from Retriever import build_retriever
 import torch
 from transformers import pipeline, AutoModelForCausalLM, AutoTokenizer
 
-MODEL_NAME = "Qwen/Qwen2.5-3B-Instruct"
 MAX_NEW_TOKENS_ANS = 1024
 MAX_NEW_TOKENS_GRADE = 6
 
-def build_generator(model_name: str = MODEL_NAME):
+def build_generator(model_name: str):
     """Return a transformers.pipeline for text generation."""
     model = AutoModelForCausalLM.from_pretrained(
         model_name,
@@ -49,7 +48,7 @@ def generate_answer(question: str, generator_llm, retriever: str) -> str:
     return output[0]["generated_text"][-1]['content']
 
 
-def build_grader(model_name: str = MODEL_NAME):
+def build_grader(model_name: str):
     """Return a transformers.pipeline used as an LLM judge."""
     model = AutoModelForCausalLM.from_pretrained(
         model_name,
@@ -145,15 +144,18 @@ def main():
     )
     args = parser.parse_args()
 
+    
     # Load evaluation data
     if args.eval_data.suffix == ".jsonl":
         qa_pairs = [json.loads(line) for line in args.eval_data.read_text().splitlines()]
     else:
         qa_pairs = json.loads(args.eval_data.read_text())
 
-    generator = build_generator()
+    MODEL_NAME_GENERATOR = "Qwen/Qwen2.5-3B-Instruct"  
+    MODEL_NAME_GRADER = "Qwen/Qwen2.5-7B-Instruct"  
+    generator = build_generator(MODEL_NAME_GENERATOR)
     retriever = build_retriever(args.retriever, args.topk, args.data_dir)
-    grader = build_grader()
+    grader = build_grader(MODEL_NAME_GRADER)
 
     run_eval(qa_pairs, generator, retriever, grader, args.save)
 
