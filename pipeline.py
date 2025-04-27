@@ -17,15 +17,21 @@ def build_generator(model_name: str = MODEL_NAME, device: int = DEVICE):
     return pipeline("text-generation", model=model_name, device_map="auto", trust_remote_code=True)
 
 
-def generate_answer(question: str, generator_llm) -> str:
+def generate_answer(question: str, generator_llm, retriever: str) -> str:
     """Generate an answer to *question* using retrieval-augmented context."""
-    context_passages = retrieve(question)
-    context = "\n\n".join(context_passages)
-    # print(f"Context: {context}")
+    ## Using RAG
+    if retriever is not 'none':
+        context_passages = retrieve(question)
+        context = "\n\n".join(context_passages)
+        # print(f"Context: {context}")
+        system_prompt = "You are a student taking an exam. For each question, you are provided with a context. Your task is to answer the question directly and concisely. Do not include any extra commentary or introductions — immediately provide the answer with help of the given context."
+        user_prompt = f"You are a student taking an exam. You will be given a question and a context. Your task is to answer the question directly and concisely, using the information provided. Do not include any extra commentary, explanations, or introductions — begin your answer immediately. \nQuestion: {question}\nContext: {context}\nPlease provide a concise and accurate answer."
     
-    system_prompt = "You are a student who is taking an exam, given a question, and a context, you need to give an answer. Be very to the point, dont say things that are not part of your answer, directly start answering"
-    user_prompt = f"You are a student who is taking an exam, given a question, and a context, you need to give an answer. Be very to the point, dont say things that are not part of your answer, directly start answering\n\n Question: {question}\n\n Context:\n{context}\n\n Please give a concise, correct answer"
-
+    ## Without using RAG
+    else:
+        system_prompt = "You are a student taking an exam. Your task is to answer the question directly and concisely. Do not include any extra commentary or introductions — immediately provide the answer."
+        user_prompt = f"You are a student taking an exam. You will be given a question. Your task is to answer the question directly and concisely. Do not include any extra commentary, explanations, or introductions — begin your answer immediately. \nQuestion: {question}\nPlease provide a concise and accurate answer."
+        
     prompt = [
         {"role": "system", "content": system_prompt},
         {"role": "user", "content": user_prompt},
@@ -45,8 +51,8 @@ def grade_answer(question: str, reference: str, student_answer: str, grader_llm)
     """Ask the grader LLM to give an integer 0-10 score."""
     
     prompt = [
-        {"role": "system", "content": "You are an exam grader. You are a linient grader. On a scale of 0-10, where 0 means completely wrong and 10 means perfectly correct, Give marks for steps too.\n"},
-        {"role": "user", "content": f"You are a linient grader. On a scale of 0-10, where 0 means completely wrong and 10 means perfectly correct, Give marks for steps too.\nYou are given a question, a reference answer, and a student's answer. score the student's answer.\n\nQuestion: {question}\n\nReference answer: {reference}\n\nStudent answer: {student_answer}\n\nRespond with only the integer score."}
+        {"role": "system", "content": "You are an exam grader. You grade leniently. For each answer, assign a score on a scale from 0 to 10, where: 0 means completely incorrect, and 10 means perfectly correct. Give credit for partial steps and partial understanding wherever possible."},
+        {"role": "user", "content": f"You are a lenient grader. Score the student's answer on a scale from 0 to 10, where: 0 means completely incorrect, and 10 means perfectly correct. Give credit for partial steps and partial understanding wherever applicable. You will be provided with a question, a reference answer, and a student's answer. Evaluate the student's answer and respond with only the integer score (no explanations). \nQuestion: {question}\nReference Answer: {reference}\nStudent Answer: {student_answer}"}
     ]
 
     result = grader_llm(prompt, max_new_tokens=MAX_NEW_TOKENS_GRADE, do_sample=False)
@@ -57,6 +63,7 @@ def grade_answer(question: str, reference: str, student_answer: str, grader_llm)
 def run_eval(
     qa_pairs: List[Dict[str, str]],
     generator,
+    retriever,
     grader,
     output_path: Path | None = None,
 ):
@@ -65,7 +72,7 @@ def run_eval(
     total = 0
     for i, qa in enumerate(qa_pairs, 1):
         q, ref = qa["question"], qa["answer"]
-        student_ans = generate_answer(q, generator)
+        student_ans = generate_answer(q, generator, retriever)
         # print(f"Q{i}: {q}\nRef: {ref}\nGen: {student_ans}")
         print(f"Generated answer: {student_ans}")
         score = grade_answer(q, ref, student_ans, grader)
@@ -102,6 +109,12 @@ def main():
         default=None,
         help="Optional path to save detailed results as JSON",
     )
+    parser.add_argument(
+        "--retriever",
+        type=str,
+        default='embed',
+        help="Which type of retriever to use. Can be one of 'none' (for no RAG), 'embed', and 'bm25'.",
+    )
     args = parser.parse_args()
 
     # Load evaluation data
@@ -111,9 +124,10 @@ def main():
         qa_pairs = json.loads(args.data.read_text())
 
     generator = build_generator()
+    retriever = args.retriever
     grader = build_grader()
 
-    run_eval(qa_pairs, generator, grader, args.save)
+    run_eval(qa_pairs, generator, retriever, grader, args.save)
 
 
 if __name__ == "__main__":
