@@ -92,6 +92,7 @@ class EmbeddingRetriver:
         else:
             print("No existing index found. Building index...")
             documents = self.load_chunks(self.data_path)
+            print(f"Loaded {len(documents)} non-empty documents.")
             index = VectorStoreIndex.from_documents(
                 documents,
                 embed_model=self.embedder,
@@ -116,7 +117,7 @@ class EmbeddingRetriver:
 
 if __name__ == "__main__":
     JSON_CHUNKS_DIR = "Data"
-    INDEX_DIR       = "Data/index_storage"
+    INDEX_DIR       = "./Data/index_storage"
     CACHE_DIR       = "cache"
     DEVICE           = "cuda:0"
     EMBED_MODEL_NAME = "BAAI/bge-small-en-v1.5"

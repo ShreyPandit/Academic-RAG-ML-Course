@@ -4,16 +4,25 @@ import re
 from pathlib import Path
 from typing import List, Dict
 from Retriever import build_retriever
-from transformers import pipeline
+import torch
+from transformers import pipeline, AutoModelForCausalLM, AutoTokenizer
 
-MODEL_NAME = "Qwen/Qwen2.5-VL-3B-Instruct"
+MODEL_NAME = "Qwen/Qwen2.5-3B-Instruct"
 MAX_NEW_TOKENS_ANS = 1024
 MAX_NEW_TOKENS_GRADE = 6
 
 def build_generator(model_name: str = MODEL_NAME):
     """Return a transformers.pipeline for text generation."""
-    return pipeline("text-generation", model=model_name, device_map="auto", trust_remote_code=True)
-
+    model = AutoModelForCausalLM.from_pretrained(
+        model_name,
+        torch_dtype=torch.bfloat16, 
+        attn_implementation="flash_attention_2",  
+        device_map="auto",
+    )
+    
+    # Load tokenizer
+    tokenizer = AutoTokenizer.from_pretrained(model_name)
+    return pipeline("text-generation", model=model, tokenizer=tokenizer)
 
 def generate_answer(question: str, generator_llm, retriever: str) -> str:
     """Generate an answer to *question* using retrieval-augmented context."""
@@ -42,7 +51,16 @@ def generate_answer(question: str, generator_llm, retriever: str) -> str:
 
 def build_grader(model_name: str = MODEL_NAME):
     """Return a transformers.pipeline used as an LLM judge."""
-    return pipeline("text-generation", model=model_name, device_map="auto", trust_remote_code=True)
+    model = AutoModelForCausalLM.from_pretrained(
+        model_name,
+        torch_dtype=torch.bfloat16, 
+        attn_implementation="flash_attention_2",  
+        device_map="auto",
+    )
+    
+    # Load tokenizer
+    tokenizer = AutoTokenizer.from_pretrained(model_name)
+    return pipeline("text-generation", model=model, tokenizer=tokenizer)
 
 
 def grade_answer(question: str, reference: str, student_answer: str, grader_llm) -> int:

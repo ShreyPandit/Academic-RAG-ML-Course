@@ -10,5 +10,6 @@ llama-index-embeddings-cohere
 llama-index-llms-openai
 llama-index-embeddings-openai
 llama-index-embeddings-huggingface
+llama-index-retrievers-bm25
 rank_bm25
 nltk
