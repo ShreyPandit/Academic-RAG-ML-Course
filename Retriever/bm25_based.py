@@ -119,7 +119,7 @@ class BM25Retriver:
     
 if __name__ == "__main__":
     JSON_CHUNKS_DIR = "Data"
-    INDEX_DIR       = "./Data/index_store/bm25_retriever"
+    INDEX_DIR       = "./Data/index_store/bm25_retriever/"
     TOP_K           = 5
     q = """ 
     What is the derivative of the sigmoid function?

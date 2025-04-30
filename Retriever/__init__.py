@@ -9,13 +9,13 @@ def build_retriever(type: str, topk: int, data_dir: str):
     if type == 'none':
         return None
     elif type == 'embed':
-        embed_model_name = "BAAI/bge-small-en-v1.5"
+        embed_model_name = "BAAI/bge-large-en-v1.5"
         print(f"Using Embedding-based Retriever with {embed_model_name} model.")
-        index_dir = os.path.join(INDEX_DIR, "embed_retreiver")
+        index_dir = os.path.join(INDEX_DIR, "embed_retriever")
         return EmbeddingRetriver(data_dir, index_dir, embed_model_name, topk, CUDA_DEVICE)
     elif type == 'bm25':
         print(f"Using BM25-based Retriever.")
-        index_dir = os.path.join(INDEX_DIR, "bm25_retreiver")
+        index_dir = os.path.join(INDEX_DIR, "bm25_retriever")
         return BM25Retriver(data_dir, index_dir, topk)
     else:
         print(f"Retreiver type {type} not known!")

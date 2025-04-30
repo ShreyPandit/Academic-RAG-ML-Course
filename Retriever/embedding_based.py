@@ -60,7 +60,7 @@ from llama_index.core.storage.storage_context import StorageContext
 class EmbeddingRetriver:
     def __init__(self, data_path, index_dir, embed_model_name, topk, device):
         self.embed_model_name = embed_model_name
-        self.embedder = embedder = HuggingFaceEmbedding(
+        self.embedder = HuggingFaceEmbedding(
             model_name=self.embed_model_name,
             device=device,
         )
@@ -117,13 +117,13 @@ class EmbeddingRetriver:
 
 if __name__ == "__main__":
     JSON_CHUNKS_DIR = "Data"
-    INDEX_DIR       = "./Data/index_storage"
-    CACHE_DIR       = "cache"
+    INDEX_DIR       = "./Data/index_store/embed_retriever/"
+    # CACHE_DIR       = "cache"
     DEVICE           = "cuda:0"
     EMBED_MODEL_NAME = "BAAI/bge-small-en-v1.5"
     TOP_K            = 5
     q = """ 
-    What is the derivative of the sigmoid function?
+    For which matrices does the singular-value decomposition (SVD) exist?
     """
     retriever = EmbeddingRetriver(JSON_CHUNKS_DIR, INDEX_DIR, EMBED_MODEL_NAME, TOP_K, DEVICE)
     for i, chunk in enumerate(retriever.retrieve(q), 1):
