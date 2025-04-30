@@ -142,6 +142,11 @@ def main():
         default='5',
         help="How many documents to retrieve during RAG.",
     )
+    parser.add_argument(
+        "--use_reranker",
+        action="store_true",
+        help="Whether to use reranker or not.",
+    )
     args = parser.parse_args()
 
     
@@ -154,7 +159,7 @@ def main():
     MODEL_NAME_GENERATOR = "Qwen/Qwen2.5-3B-Instruct"  
     MODEL_NAME_GRADER = "Qwen/Qwen2.5-7B-Instruct"  
     generator = build_generator(MODEL_NAME_GENERATOR)
-    retriever = build_retriever(args.retriever, args.topk, args.data_dir)
+    retriever = build_retriever(args.retriever, args.topk, args.data_dir, args.use_reranker)
     grader = build_grader(MODEL_NAME_GRADER)
 
     run_eval(qa_pairs, generator, retriever, grader, args.save)

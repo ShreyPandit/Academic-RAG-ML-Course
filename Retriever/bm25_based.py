@@ -4,6 +4,8 @@ import os
 from llama_index.retrievers.bm25 import BM25Retriever
 from llama_index.core.storage.docstore.simple_docstore import SimpleDocumentStore
 from llama_index.core.schema import TextNode
+from llama_index.core import QueryBundle
+from llama_index.core.postprocessor import SentenceTransformerRerank
 # from llama_index.core.storage.storage_context import StorageContext
 
 import json
@@ -69,12 +71,20 @@ import json
 
 
 class BM25Retriver:
-    def __init__(self, data_path, index_dir, topk):
+    def __init__(self, data_path, index_dir, topk, use_reranker):
         self.topk = topk
         self.data_path = data_path
         self.index_dir = index_dir
         self.docstore = self.build_index(self.index_dir)
         self.retriever = self.build_retriever()
+        if use_reranker:
+            print(f"Using reranker!")
+            self.reranker = SentenceTransformerRerank(
+            model="cross-encoder/ms-marco-MiniLM-L-2-v2", 
+            top_n=self.topk
+            )
+        else:
+            self.reranker = None
 
     def load_chunks(self, path):
         docs = []
@@ -114,8 +124,14 @@ class BM25Retriver:
         if not text.strip():
             return []
         hits = self.retriever.retrieve(text)  # retrieve from BM25
-        # hits = keyword_reranker(text, hits)  # rerank using keyword overlap
+        if self.reranker is not None:
+            hits = self.rerank(hits, text)
         return [doc.text for doc in hits]  # return only text
+
+    def rerank(self, retrieved_nodes, query):
+        query_bundle = QueryBundle(query)
+        retrieved_nodes = self.reranker.postprocess_nodes(retrieved_nodes, query_bundle)
+        return retrieved_nodes
     
 if __name__ == "__main__":
     JSON_CHUNKS_DIR = "Data"
